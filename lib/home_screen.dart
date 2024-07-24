@@ -1,141 +1,119 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart'; // Asegurarse de importar el archivo de la pantalla de login
+import 'posts.dart';
+import 'fetch_posts.dart';
 
-// Clase Post
-class Post {
-  final int userId;
-  final int id;
-  final String title;
-  final String body;
-
-  Post({
-    required this.userId,
-    required this.id,
-    required this.title,
-    required this.body,
-  });
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
 }
 
-// Lista de posts del link (4 posts)
-final List<Post> posts = [
-  Post(
-    userId: 1,
-    id: 1,
-    title:
-        "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
-    body:
-        "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto",
-  ),
-  Post(
-    userId: 1,
-    id: 2,
-    title: "qui est esse",
-    body:
-        "est rerum tempore vitae\nsequi sint nihil reprehenderit dolor beatae ea dolores neque\nfugiat blanditiis voluptate porro vel nihil molestiae ut reiciendis\nqui aperiam non debitis possimus qui neque nisi nulla",
-  ),
-  Post(
-    userId: 1,
-    id: 3,
-    title: "ea molestias quasi exercitationem repellat qui ipsa sit aut",
-    body:
-        "et iusto sed quo iure\nvoluptatem occaecati omnis eligendi aut ad\nvoluptatem doloribus vel accusantium quis pariatur\nmolestiae porro eius odio et labore et velit aut",
-  ),
-  Post(
-    userId: 1,
-    id: 4,
-    title: "eum et est occaecati",
-    body:
-        "ullam et saepe reiciendis voluptatem adipisci\nsit amet autem assumenda provident rerum culpa\nquis hic commodi nesciunt rem tenetur doloremque ipsam iure\nquis sunt voluptatem rerum illo velit",
-  ),
-];
+class _HomeScreenState extends State<HomeScreen> {
+  late Future<List<Post>> futurePosts;
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  @override
+  void initState() {
+    super.initState();
+    futurePosts = fetchPosts();
+  }
+
+  int _selectedIndex = 0;
+  static final List<Widget> _widgetOptions = <Widget>[
+    PostsScreen(),
+    const Center(child: Text('TODO', style: const TextStyle(fontSize: 24))),
+    const Center(child: Text('PROFILE', style: TextStyle(fontSize: 24))),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            const Text(
-              'Posts',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: ListView.builder(
-                itemCount: posts.length,
-                itemBuilder: (context, index) {
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 16.0),
-                    padding: const EdgeInsets.all(16.0),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE1BEE7),
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child: ListTile(
-                      title: Text(posts[index].title),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.arrow_forward),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  DetailScreen(postId: posts[index].id),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                );
-              },
-              child: const Text('Volver'),
-            ),
-          ],
+      appBar: AppBar(
+        title: const Text('Posts'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
         ),
+      ),
+      body: _widgetOptions.elementAt(_selectedIndex),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Posts',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list),
+            label: 'Todos',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.amber[800],
+        onTap: _onItemTapped,
       ),
     );
   }
 }
 
-class DetailScreen extends StatelessWidget {
-  final int postId;
+class PostsScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<Post>>(
+      future: fetchPosts(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          List<Post>? posts = snapshot.data;
+          return ListView.builder(
+            itemCount: posts?.length,
+            itemBuilder: (context, index) {
+              return Card(
+                margin: const EdgeInsets.all(10),
+                color: Colors.purple[50],
+                child: ListTile(
+                  title: Text('${posts![index].id}-${posts[index].title}'),
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) =>
+                          PostDetailScreen(post: posts[index]),
+                    ));
+                  },
+                ),
+              );
+            },
+          );
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+        return const Center(child: CircularProgressIndicator());
+      },
+    );
+  }
+}
 
-  const DetailScreen({super.key, required this.postId});
+class PostDetailScreen extends StatelessWidget {
+  final Post post;
+
+  PostDetailScreen({required this.post});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Detalle del Post'),
+      ),
       body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Post ID: $postId',
-              style: const TextStyle(fontSize: 24),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Volver'),
-            ),
-          ],
-        ),
+        child: Text('ID: ${post.id}', style: const TextStyle(fontSize: 24)),
       ),
     );
   }
