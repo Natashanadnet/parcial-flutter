@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'posts.dart';
+import '../models/posts.dart';
 import 'package:http/http.dart' as http;
 
 Future<List<Post>> fetchPosts() async {
