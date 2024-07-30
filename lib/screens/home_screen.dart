@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:parcial/models/posts.dart';
+import 'package:parcial/screens/profile_screen.dart';
+import 'package:parcial/screens/todos_screen.dart';
 import 'comments_screen.dart';
 import 'post_detail_screen.dart';
 import 'package:http/http.dart' as http;
@@ -36,8 +38,8 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   static List<Widget> _widgetOptions = <Widget>[
     PostsScreen(),
-    const Center(child: Text('TODO', style: TextStyle(fontSize: 24))),
-    const Center(child: Text('PROFILE', style: TextStyle(fontSize: 24))),
+    TodosScreen(),
+    ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -48,21 +50,45 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    String appBarTitle;
+    IconData appBarIcon;
+    VoidCallback appBarAction;
+
+    if (_selectedIndex == 1) {
+      appBarTitle = 'Todos';
+      appBarIcon = Icons.arrow_back;
+      appBarAction = () {
+        setState(() {
+          _selectedIndex = 0;
+        });
+      };
+    } else if (_selectedIndex == 2) {
+      appBarTitle = 'Perfil';
+      appBarIcon = Icons.arrow_back;
+      appBarAction = () {
+        setState(() {
+          _selectedIndex = 0;
+        });
+      };
+    } else {
+      appBarTitle = 'Posts';
+      appBarIcon = Icons.logout;
+      appBarAction = () {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      };
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title:
-            const Text('Posts', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(appBarTitle,
+            style: const TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
-              );
-            },
-          ),
-        ],
+        leading: IconButton(
+          icon: Icon(appBarIcon),
+          onPressed: appBarAction,
+        ),
       ),
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
@@ -77,11 +103,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
-            label: 'Profile',
+            label: 'Perfil',
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.amber[800],
         onTap: _onItemTapped,
       ),
     );
@@ -104,7 +129,7 @@ class PostsScreen extends StatelessWidget {
                   itemBuilder: (context, index) {
                     return Slidable(
                       key: ValueKey(posts![index].id),
-                      endActionPane: ActionPane(
+                      startActionPane: ActionPane(
                         motion: const ScrollMotion(),
                         children: [
                           SlidableAction(
@@ -128,9 +153,28 @@ class PostsScreen extends StatelessWidget {
                           ),
                         ],
                       ),
+                      endActionPane: const ActionPane(
+                        motion: ScrollMotion(),
+                        children: [
+                          SlidableAction(
+                            onPressed: doNothing,
+                            backgroundColor: Color(0xFFFE4A49),
+                            foregroundColor: Colors.white,
+                            icon: Icons.delete,
+                            label: 'Delete',
+                          ),
+                          SlidableAction(
+                            onPressed: doNothing,
+                            backgroundColor: Color(0xFF21B7CA),
+                            foregroundColor: Colors.white,
+                            icon: Icons.share,
+                            label: 'Share',
+                          ),
+                        ],
+                      ),
                       child: Card(
                         margin: const EdgeInsets.all(10),
-                        color: Colors.purple[50],
+                        color: Color.fromARGB(255, 206, 235, 209),
                         child: ListTile(
                           title:
                               Text('${posts[index].id}-${posts[index].title}'),
