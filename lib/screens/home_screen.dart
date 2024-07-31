@@ -129,8 +129,8 @@ class PostsScreen extends StatelessWidget {
                   itemBuilder: (context, index) {
                     return Slidable(
                       key: ValueKey(posts![index].id),
-                      startActionPane: ActionPane(
-                        motion: const ScrollMotion(),
+                      endActionPane: ActionPane(
+                        motion: ScrollMotion(),
                         children: [
                           SlidableAction(
                             flex: 2,
@@ -153,31 +153,14 @@ class PostsScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                      endActionPane: const ActionPane(
-                        motion: ScrollMotion(),
-                        children: [
-                          SlidableAction(
-                            onPressed: doNothing,
-                            backgroundColor: Color(0xFFFE4A49),
-                            foregroundColor: Colors.white,
-                            icon: Icons.delete,
-                            label: 'Delete',
-                          ),
-                          SlidableAction(
-                            onPressed: doNothing,
-                            backgroundColor: Color(0xFF21B7CA),
-                            foregroundColor: Colors.white,
-                            icon: Icons.share,
-                            label: 'Share',
-                          ),
-                        ],
-                      ),
                       child: Card(
                         margin: const EdgeInsets.all(10),
-                        color: Color.fromARGB(255, 206, 235, 209),
+                        color: Theme.of(context).colorScheme.secondary,
                         child: ListTile(
-                          title:
-                              Text('${posts[index].id}-${posts[index].title}'),
+                          title: Text(
+                            '${posts[index].id}-${posts[index].title}',
+                            style: const TextStyle(color: Colors.white),
+                          ),
                           onTap: () {
                             Navigator.of(context).push(MaterialPageRoute(
                               builder: (context) =>

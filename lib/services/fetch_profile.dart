@@ -12,6 +12,6 @@ Future<Map<String, dynamic>> fetchRandomUser() async {
     List jsonResponse = json.decode(response.body);
     return jsonResponse[0];
   } else {
-    throw Exception('No se pudo cagar el usuario');
+    throw Exception('Failed to load user');
   }
 }
